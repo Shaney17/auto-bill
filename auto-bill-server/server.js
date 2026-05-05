@@ -1,5 +1,8 @@
 'use strict';
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
 const { Client } = require('@modelcontextprotocol/sdk/client/index.js');
 const { StdioClientTransport } = require('@modelcontextprotocol/sdk/client/stdio.js');
 const { JWT } = require('google-auth-library');
@@ -23,9 +26,9 @@ async function getMcpClient() {
   if (mcpClient) return mcpClient;
 
   const transport = new StdioClientTransport({
-    command: 'npx',
-    args: ['-y', 'minimax-mcp'],
-    env: { ...process.env }
+    command: 'uvx',
+    args: ['minimax-coding-plan-mcp', '-y'],
+    env: { ...process.env, MINIMAX_API_HOST: 'https://api.minimax.io' }
   });
 
   mcpClient = new Client({ name: 'auto-bill', version: '1.0.0' }, {});
@@ -39,19 +42,26 @@ async function getMcpClient() {
 }
 
 async function analyzeImage(base64Image) {
-  const client = await getMcpClient();
-  const result = await client.callTool({
-    name: 'MiniMax_understand_image',
-    arguments: {
-      image_source: `data:image/jpeg;base64,${base64Image}`,
-      prompt: PROMPT
-    }
-  });
+  const tmpPath = path.join(os.tmpdir(), `auto-bill-${Date.now()}.jpg`);
+  fs.writeFileSync(tmpPath, Buffer.from(base64Image, 'base64'));
 
-  const text = result.content?.[0]?.text ?? '';
-  const jsonMatch = text.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) throw new Error('No JSON in MCP response: ' + text.slice(0, 200));
-  return JSON.parse(jsonMatch[0]);
+  try {
+    const client = await getMcpClient();
+    const result = await client.callTool({
+      name: 'understand_image',
+      arguments: {
+        image_url: tmpPath,
+        prompt: PROMPT
+      }
+    });
+
+    const text = result.content?.[0]?.text ?? '';
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('No JSON in MCP response: ' + text.slice(0, 200));
+    return JSON.parse(jsonMatch[0]);
+  } finally {
+    fs.unlinkSync(tmpPath);
+  }
 }
 
 async function appendToSheets(txData) {
