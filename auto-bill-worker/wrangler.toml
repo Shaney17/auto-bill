@@ -1,0 +1,11 @@
+name = "auto-bill-worker"
+main = "index.ts"
+compatibility_date = "2024-01-01"
+
+[vars]
+SHEET_ID = "1cwd8x9-3GJ6YvDMoIaj1zVtY7Tnhv9xNaEZIy-VWsR8"
+SHEET_NAME = "📋 Dữ liệu gốc"
+
+# Secrets to set via `wrangler secret put`:
+# MINIMAX_API_KEY
+# GOOGLE_SHEETS_CREDENTIALS (full JSON of service account key)

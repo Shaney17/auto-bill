@@ -1,0 +1,14 @@
+{
+  "name": "auto-bill-server",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "google-auth-library": "^9.0.0",
+    "googleapis": "^140.0.0"
+  }
+}
