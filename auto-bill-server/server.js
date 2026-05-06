@@ -13,12 +13,12 @@ const app = express();
 app.use(express.json({ limit: '20mb' }));
 
 const PROMPT =
-  'Phan tich anh giao dich ngan hang Techcombank. Tra ve JSON thuan tuy (khong markdown, khong code blocks). ' +
-  'Danh muc CHI: An uong, Tien dien nuoc, Di lai xang xe, Mua sam nap vi, Giai tri, Gui vo iu, Dau tu chung khoan, The tin dung, Quy nhom, Quy nhom Qua tang, Chi khac. ' +
-  'Danh muc THU: Luong, Thu nhap dau tu, Lai suat ngan hang, Thuong phuc loi, Ban be hoan tien, Vo chuyen lai, Thu khac. ' +
-  'BO QUA: giao dich noi bo (Sinh loi tu dong, Upoint, chuyen tien noi bo). ' +
-  'Dinh dang ngay: 1 thg 5, 2026 hoac dd/MM/yyyy -> chuan hoa ve dd/MM/yyyy. ' +
-  'Tra ve JSON: {"ngay":"dd/MM/yyyy","doi_tac":"","ngan_hang":"","noi_dung":"","chi":so|null,"thu":so|null,"loai":"CHI|THU|BO QUA","phan_loai":"danh muc"}';
+  'Phân tích ảnh giao dịch ngân hàng Techcombank. Trả về JSON thuần túy (không markdown, không code block). ' +
+  'Danh mục CHI: Ăn uống, Tiền điện nước, Đi lại xăng xe, Mua sắm nạp ví, Giải trí, Gửi vợ yêu, Đầu tư chứng khoán, Thẻ tín dụng, Quỹ nhóm, Quỹ nhóm quà tặng, Chi khác. ' +
+  'Danh mục THU: Lương, Thu nhập đầu tư, Lãi suất ngân hàng, Thưởng phúc lợi, Bạn bè hoàn tiền, Vợ chuyển lại, Thu khác. ' +
+  'BỎ QUA: giao dịch nội bộ (Sinh lời tự động, Upoint, chuyển tiền nội bộ, trừ những giao dịch có nội dung là lương, thưởng). ' +
+  'Định dạng ngày: 1 thg 5, 2026 hoặc dd/MM/yyyy -> chuẩn hóa về dd/MM/yyyy. ' +
+  'Trả về JSON: {"ngay":"dd/MM/yyyy","doi_tac":"","ngan_hang":"","noi_dung":"","chi":so|null,"thu":so|null,"loai":"CHI|THU|BỎ QUA","phan_loai":"danh muc"}';
 
 let mcpClient = null;
 
