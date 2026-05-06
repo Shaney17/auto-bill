@@ -56,7 +56,7 @@ async function analyzeImage(base64Image) {
     });
 
     const text = result.content?.[0]?.text ?? '';
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    const jsonMatch = text.match(/\{"[\s\S]*\}/);
     if (!jsonMatch) throw new Error('No JSON in MCP response: ' + text.slice(0, 200));
     try {
       return JSON.parse(jsonMatch[0]);
