@@ -1,6 +1,11 @@
 'use strict';
 require('dotenv').config();
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
+const { Client } = require('@modelcontextprotocol/sdk/client/index.js');
+const { StdioClientTransport } = require('@modelcontextprotocol/sdk/client/stdio.js');
 const { JWT } = require('google-auth-library');
 const { google } = require('googleapis');
 
@@ -15,34 +20,51 @@ const PROMPT =
   'Dinh dang ngay: 1 thg 5, 2026 hoac dd/MM/yyyy -> chuan hoa ve dd/MM/yyyy. ' +
   'Tra ve JSON: {"ngay":"dd/MM/yyyy","doi_tac":"","ngan_hang":"","noi_dung":"","chi":so|null,"thu":so|null,"loai":"CHI|THU|BO QUA","phan_loai":"danh muc"}';
 
-async function analyzeImage(base64Image) {
-  const imageUrl = `data:image/jpeg;base64,${base64Image}`;
+let mcpClient = null;
 
-  const host = process.env.MINIMAX_API_HOST || 'https://api.minimax.io';
-  const res = await fetch(`${host}/v1/coding_plan/vlm`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env.MINIMAX_API_KEY}`
-    },
-    body: JSON.stringify({ prompt: PROMPT, image_url: imageUrl }),
-    signal: AbortSignal.timeout(120000)
+async function getMcpClient() {
+  if (mcpClient) return mcpClient;
+
+  const transport = new StdioClientTransport({
+    command: 'minimax-coding-plan-mcp',
+    args: [],
+    env: { ...process.env, MINIMAX_API_HOST: 'https://api.minimax.io' }
   });
 
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`Minimax API error ${res.status}: ${errText.slice(0, 200)}`);
-  }
+  mcpClient = new Client({ name: 'auto-bill', version: '1.0.0' }, {});
+  await mcpClient.connect(transport);
+  console.log('MCP client connected');
 
-  const data = await res.json();
-  console.log('Minimax raw:', JSON.stringify(data).slice(0, 300));
-  const text = data.content ?? '';
-  const jsonMatch = text.match(/\{"[\s\S]*\}/);
-  if (!jsonMatch) throw new Error('No JSON in Minimax response: ' + text.slice(0, 200));
+  mcpClient.onclose = () => { mcpClient = null; };
+
+  return mcpClient;
+}
+
+async function analyzeImage(base64Image) {
+  const tmpPath = path.join(os.tmpdir(), `auto-bill-${Date.now()}.jpg`);
+  fs.writeFileSync(tmpPath, Buffer.from(base64Image, 'base64'));
+
   try {
-    return JSON.parse(jsonMatch[0]);
-  } catch (e) {
-    throw new Error('JSON parse failed: ' + e.message + ' | raw: ' + jsonMatch[0].slice(0, 100));
+    const client = await getMcpClient();
+    const result = await client.callTool(
+      {
+        name: 'understand_image',
+        arguments: { image_source: tmpPath, prompt: PROMPT }
+      },
+      undefined,
+      { timeout: 120000 }
+    );
+
+    const text = result.content?.[0]?.text ?? '';
+    const jsonMatch = text.match(/\{"[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('No JSON in MCP response: ' + text.slice(0, 200));
+    try {
+      return JSON.parse(jsonMatch[0]);
+    } catch (e) {
+      throw new Error('JSON parse failed: ' + e.message + ' | raw: ' + jsonMatch[0].slice(0, 100));
+    }
+  } finally {
+    fs.unlinkSync(tmpPath);
   }
 }
 
