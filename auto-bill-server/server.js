@@ -18,7 +18,8 @@ const PROMPT =
 async function analyzeImage(base64Image) {
   const imageUrl = `data:image/jpeg;base64,${base64Image}`;
 
-  const res = await fetch(`${process.env.MINIMAX_API_HOST}/v1/coding_plan/vlm`, {
+  const host = process.env.MINIMAX_API_HOST || 'https://api.minimax.io';
+  const res = await fetch(`${host}/v1/coding_plan/vlm`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -34,6 +35,7 @@ async function analyzeImage(base64Image) {
   }
 
   const data = await res.json();
+  console.log('Minimax raw:', JSON.stringify(data).slice(0, 300));
   const text = data.content ?? '';
   const jsonMatch = text.match(/\{"[\s\S]*\}/);
   if (!jsonMatch) throw new Error('No JSON in Minimax response: ' + text.slice(0, 200));
