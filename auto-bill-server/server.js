@@ -95,9 +95,20 @@ async function appendToSheets(txData) {
     txData.phan_loai || 'Chi khac'
   ];
 
+  const sheetRange = `${process.env.SHEET_NAME}!A1:I1`;
+  const existing = await sheets.spreadsheets.values.get({ spreadsheetId: process.env.SHEET_ID, range: sheetRange });
+  if (!existing.data.values) {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: process.env.SHEET_ID,
+      range: sheetRange,
+      valueInputOption: 'RAW',
+      requestBody: { values: [['Tháng', 'Ngày', 'Đối tác', 'Ngân hàng', 'Nội dung', 'Chi', 'Thu', 'Loại', 'Phân loại']] }
+    });
+  }
+
   await sheets.spreadsheets.values.append({
     spreadsheetId: process.env.SHEET_ID,
-    range: `${process.env.SHEET_NAME}!A1`,
+    range: `${process.env.SHEET_NAME}!A2`,
     valueInputOption: 'RAW',
     insertDataOption: 'INSERT_ROWS',
     requestBody: { values: [row] }
