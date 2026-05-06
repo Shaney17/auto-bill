@@ -15,11 +15,11 @@ app.use(express.json({ limit: '20mb' }));
 const PROMPT =
   'Phân tích ảnh giao dịch ngân hàng Techcombank. Trả về JSON thuần túy (không markdown, không code block). ' +
   'Danh mục CHI: Ăn uống, Tiền điện nước, Đi lại xăng xe, Chi hàng ngày, Giải trí, Gửi vợ yêu, Đầu tư chứng khoán, Thẻ tín dụng, Quỹ nhóm, Quỹ nhóm quà tặng, Chi khác. ' +
-  'Lưu ý trong Danh mục CHI có 1 số bên nhận là siêu thị như T-mart, Wincommerce, Aeon thì ghi nhận là Chi hàng ngày. Các bên nhận là cửa hàng như Mixue, Cua hang am ap, Uno, Bingxue, Winggo thì ghi nhận vào Ăn uống' +
+  'Lưu ý trong Danh mục CHI có 1 số bên nhận là siêu thị như T-mart, Wincommerce, Aeon thì ghi nhận là Chi hàng ngày. Các bên nhận là cửa hàng như GS25, Mixue, Cua hang am ap, Uno, Bingxue, Winggo thì ghi nhận vào Ăn uống' +
   'Danh mục THU: Lương, Thu nhập đầu tư, Lãi suất ngân hàng, Thưởng phúc lợi, Bạn bè hoàn tiền, Vợ chuyển lại, Thu khác. ' +
   'BỎ QUA: giao dịch nội bộ (Sinh lời tự động, Upoint, chuyển tiền nội bộ, trừ những giao dịch có nội dung là lương, thưởng). ' +
   'Định dạng ngày: 1 thg 5, 2026 hoặc dd/MM/yyyy -> chuẩn hóa về dd/MM/yyyy. ' +
-  'Trả về JSON: {"ngay":"dd/MM/yyyy","doi_tac":"","ngan_hang":"","noi_dung":"","chi":so|null,"thu":so|null,"loai":"CHI|THU|BỎ QUA","phan_loai":"danh muc"}';
+  'Trả về JSON: {"ma_gd":"mã giao dịch nếu có, nếu không có thì null","ngay":"dd/MM/yyyy","doi_tac":"","ngan_hang":"","noi_dung":"","chi":so|null,"thu":so|null,"loai":"CHI|THU|BỎ QUA","phan_loai":"danh muc"}';
 
 let mcpClient = null;
 
@@ -93,18 +93,27 @@ async function appendToSheets(txData) {
     txData.chi || '',
     txData.thu || '',
     txData.loai || 'CHI',
-    txData.phan_loai || 'Chi khac'
+    txData.phan_loai || 'Chi khác',
+    txData.ma_gd || ''
   ];
 
-  const sheetRange = `${process.env.SHEET_NAME}!A1:I1`;
-  const existing = await sheets.spreadsheets.values.get({ spreadsheetId: process.env.SHEET_ID, range: sheetRange });
+  const headerRange = `${process.env.SHEET_NAME}!A1:J1`;
+  const existing = await sheets.spreadsheets.values.get({ spreadsheetId: process.env.SHEET_ID, range: headerRange });
   if (!existing.data.values) {
     await sheets.spreadsheets.values.update({
       spreadsheetId: process.env.SHEET_ID,
-      range: sheetRange,
+      range: headerRange,
       valueInputOption: 'RAW',
-      requestBody: { values: [['Tháng', 'Ngày', 'Đối tác', 'Ngân hàng', 'Nội dung', 'Chi', 'Thu', 'Loại', 'Phân loại']] }
+      requestBody: { values: [['Tháng', 'Ngày', 'Đối tác', 'Ngân hàng', 'Nội dung', 'Chi', 'Thu', 'Loại', 'Phân loại', 'Mã GD']] }
     });
+  }
+
+  if (txData.ma_gd) {
+    const maGdCol = await sheets.spreadsheets.values.get({ spreadsheetId: process.env.SHEET_ID, range: `${process.env.SHEET_NAME}!J:J` });
+    const existingIds = (maGdCol.data.values || []).flat();
+    if (existingIds.includes(String(txData.ma_gd))) {
+      return null;
+    }
   }
 
   await sheets.spreadsheets.values.append({
@@ -150,6 +159,9 @@ app.post('/', async (req, res) => {
     }
 
     const sheetUrl = await appendToSheets(parsed);
+    if (sheetUrl === null) {
+      return res.json({ status: 'duplicate', parsed });
+    }
     res.json({ status: 'ok', parsed, sheetUrl });
   } catch (err) {
     console.error('Error:', err.message);
