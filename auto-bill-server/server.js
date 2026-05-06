@@ -14,10 +14,11 @@ app.use(express.json({ limit: '20mb' }));
 
 const PROMPT =
   'Phân tích ảnh giao dịch ngân hàng Techcombank. Trả về JSON thuần túy (không markdown, không code block). ' +
-  'Danh mục CHI: Ăn uống, Tiền điện nước, Đi lại xăng xe, Chi hàng ngày, Giải trí, Gửi vợ yêu, Đầu tư chứng khoán, Thẻ tín dụng, Quỹ nhóm, Quỹ nhóm quà tặng, Chi khác. ' +
+  'Danh mục CHI: Ăn uống, Tiền điện nước, Đi lại xăng xe, Chi hàng ngày, Giải trí, Gửi vợ yêu, Thẻ tín dụng, Quỹ nhóm, Quỹ nhóm quà tặng, Chi khác. ' +
   'Lưu ý trong Danh mục CHI có 1 số bên nhận là siêu thị như T-mart, Wincommerce, Aeon thì ghi nhận là Chi hàng ngày. Các bên nhận là cửa hàng như GS25, Mixue, Cua hang am ap, Uno, Bingxue, Winggo thì ghi nhận vào Ăn uống' +
   'Danh mục THU: Lương, Thu nhập đầu tư, Lãi suất ngân hàng, Thưởng phúc lợi, Bạn bè hoàn tiền, Vợ chuyển lại, Thu khác. ' +
   'BỎ QUA: giao dịch nội bộ (Sinh lời tự động, Upoint, chuyển tiền nội bộ, trừ những giao dịch có nội dung là lương, thưởng). ' +
+  'Danh mục TIET_KIEM: Đầu tư chứng khoán, gửi tiết kiệm, mua vàng' +
   'Định dạng ngày: 1 thg 5, 2026 hoặc dd/MM/yyyy -> chuẩn hóa về dd/MM/yyyy. ' +
   'Trả về JSON: {"ma_gd":"mã giao dịch nếu có, nếu không có thì null","ngay":"dd/MM/yyyy","doi_tac":"","ngan_hang":"","noi_dung":"","chi":so|null,"thu":so|null,"loai":"CHI|THU|BỎ QUA","phan_loai":"danh muc"}';
 
