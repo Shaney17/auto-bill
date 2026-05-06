@@ -58,14 +58,23 @@ async function analyzeImage(base64Image) {
     const text = result.content?.[0]?.text ?? '';
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error('No JSON in MCP response: ' + text.slice(0, 200));
-    return JSON.parse(jsonMatch[0]);
+    try {
+      return JSON.parse(jsonMatch[0]);
+    } catch (e) {
+      throw new Error('MCP JSON parse failed: ' + e.message + ' | raw: ' + jsonMatch[0].slice(0, 100));
+    }
   } finally {
     fs.unlinkSync(tmpPath);
   }
 }
 
 async function appendToSheets(txData) {
-  const credentials = JSON.parse(process.env.GOOGLE_SHEETS_CREDENTIALS);
+  let credentials;
+  try {
+    credentials = JSON.parse(process.env.GOOGLE_SHEETS_CREDENTIALS);
+  } catch (e) {
+    throw new Error('GOOGLE_SHEETS_CREDENTIALS invalid JSON: ' + e.message);
+  }
   const auth = new JWT({
     email: credentials.client_email,
     key: credentials.private_key,
