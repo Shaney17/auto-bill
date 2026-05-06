@@ -1,4 +1,5 @@
 'use strict';
+require('dotenv').config();
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
@@ -50,7 +51,7 @@ async function analyzeImage(base64Image) {
     const result = await client.callTool({
       name: 'understand_image',
       arguments: {
-        image_url: tmpPath,
+        image_source: tmpPath,
         prompt: PROMPT
       }
     });
