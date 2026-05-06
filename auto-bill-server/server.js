@@ -97,7 +97,7 @@ async function appendToSheets(txData) {
 
   await sheets.spreadsheets.values.append({
     spreadsheetId: process.env.SHEET_ID,
-    range: `${process.env.SHEET_NAME}!A:I`,
+    range: `${process.env.SHEET_NAME}!A1`,
     valueInputOption: 'RAW',
     insertDataOption: 'INSERT_ROWS',
     requestBody: { values: [row] }
