@@ -30,6 +30,11 @@ Danh mục THU:
 
 Lưu ý định dạng ngày: Techcombank hiển thị dạng "1 thg 5, 2026" hoặc "01/05/2026" — hãy chuẩn hóa về "dd/MM/yyyy".
 
+Phân loại chủ sở hữu giao dịch (chu_so_huu):
+- Nếu tên chủ tài khoản hoặc người gửi là "NGUYEN TUAN LINH" => "Chồng"
+- Nếu tên chủ tài khoản hoặc người gửi là "NGUYEN THU THUY" => "Vợ"
+- Nếu không xác định được => null
+
 Trả về JSON với đúng format:
 {
   "ngay": "dd/MM/yyyy",
@@ -39,7 +44,8 @@ Trả về JSON với đúng format:
   "chi": số_tiền_nếu_là_chi (integer, không có đơn vị),
   "thu": số_tiền_nếu_là_thu (integer, không có đơn vị),
   "loai": "CHI" hoặc "THU" hoặc "BỎ QUA",
-  "phan_loai": "tên danh mục chính xác như trên"
+  "phan_loai": "tên danh mục chính xác như trên",
+  "chu_so_huu": "Chồng" hoặc "Vợ" hoặc null
 }
 
 Nếu không đọc được ảnh hoặc không phải màn hình giao dịch ngân hàng, trả về:

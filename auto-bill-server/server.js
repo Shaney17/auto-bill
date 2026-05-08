@@ -18,9 +18,10 @@ const PROMPT =
   'Lưu ý trong Danh mục CHI có 1 số bên nhận là siêu thị như T-mart, Wincommerce, Aeon thì ghi nhận là Chi hàng ngày. Các bên nhận là cửa hàng như GS25, Mixue, Cua hang am ap, Uno, Bingxue, Winggo thì ghi nhận vào Ăn uống' +
   'Danh mục THU: Lương, Thu nhập đầu tư, Lãi suất ngân hàng, Thưởng phúc lợi, Bạn bè hoàn tiền, Vợ chuyển lại, Thu khác. ' +
   'BỎ QUA: giao dịch nội bộ (Sinh lời tự động, Upoint, chuyển tiền nội bộ, trừ những giao dịch có nội dung là lương, thưởng). ' +
-  'Danh mục TIET_KIEM: Đầu tư chứng khoán, gửi tiết kiệm, mua vàng' +
+  'Danh mục TIET_KIEM: Đầu tư chứng khoán, gửi tiết kiệm, mua vàng. ' +
   'Định dạng ngày: 1 thg 5, 2026 hoặc dd/MM/yyyy -> chuẩn hóa về dd/MM/yyyy. ' +
-  'Trả về JSON: {"ma_gd":"mã giao dịch nếu có, nếu không có thì null","ngay":"dd/MM/yyyy","doi_tac":"","ngan_hang":"","noi_dung":"","chi":so|null,"thu":so|null,"loai":"CHI|THU|BỎ QUA","phan_loai":"danh muc"}';
+  'Chủ sở hữu (chu_so_huu): nếu tên chủ tài khoản hoặc người gửi là NGUYEN TUAN LINH => "Chồng", nếu là NGUYEN THU THUY => "Vợ", không xác định => null. ' +
+  'Trả về JSON: {"ma_gd":"mã giao dịch nếu có, nếu không có thì null","ngay":"dd/MM/yyyy","doi_tac":"","ngan_hang":"","noi_dung":"","chi":so|null,"thu":so|null,"loai":"CHI|THU|BỎ QUA","phan_loai":"danh muc","chu_so_huu":"Chồng|Vợ|null"}';
 
 let mcpClient = null;
 
@@ -95,17 +96,18 @@ async function appendToSheets(txData) {
     txData.thu || '',
     txData.loai || 'CHI',
     txData.phan_loai || 'Chi khác',
-    txData.ma_gd || ''
+    txData.ma_gd || '',
+    txData.chu_so_huu || ''
   ];
 
-  const headerRange = `${process.env.SHEET_NAME}!A1:J1`;
+  const headerRange = `${process.env.SHEET_NAME}!A1:K1`;
   const existing = await sheets.spreadsheets.values.get({ spreadsheetId: process.env.SHEET_ID, range: headerRange });
   if (!existing.data.values) {
     await sheets.spreadsheets.values.update({
       spreadsheetId: process.env.SHEET_ID,
       range: headerRange,
       valueInputOption: 'RAW',
-      requestBody: { values: [['Tháng', 'Ngày', 'Đối tác', 'Ngân hàng', 'Nội dung', 'Chi', 'Thu', 'Loại', 'Phân loại', 'Mã GD']] }
+      requestBody: { values: [['Tháng', 'Ngày', 'Đối tác', 'Ngân hàng', 'Nội dung', 'Chi', 'Thu', 'Loại', 'Phân loại', 'Mã GD', 'Chủ sở hữu']] }
     });
   }
 
