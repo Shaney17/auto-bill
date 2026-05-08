@@ -29,8 +29,8 @@ async function getMcpClient() {
   if (mcpClient) return mcpClient;
 
   const transport = new StdioClientTransport({
-    command: 'minimax-coding-plan-mcp',
-    args: [],
+    command: '/home/camellia17/.local/bin/uvx',
+    args: ['minimax-coding-plan-mcp', '-y'],
     env: { ...process.env, MINIMAX_API_HOST: 'https://api.minimax.io' }
   });
 

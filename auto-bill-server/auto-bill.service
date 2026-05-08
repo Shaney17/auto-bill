@@ -1,0 +1,17 @@
+[Unit]
+Description=Auto-Bill Server
+After=network.target
+
+[Service]
+Type=simple
+User=camellia17
+WorkingDirectory=/home/camellia17/Desktop/auto-bill/auto-bill-server
+ExecStart=/usr/bin/node /home/camellia17/Desktop/auto-bill/auto-bill-server/server.js
+
+Restart=on-failure
+RestartSec=10
+StandardOutput=append:/var/log/auto-bill.log
+StandardError=append:/var/log/auto-bill.error.log
+
+[Install]
+WantedBy=multi-user.target
