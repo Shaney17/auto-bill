@@ -17,6 +17,10 @@ __pycache__/
 
 # Local data
 local-data/
+.DS_Store
 
 # Claude
 .claude
+
+#playwright
+.playwright-mcp
