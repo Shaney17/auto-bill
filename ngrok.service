@@ -1,0 +1,16 @@
+[Unit]
+Description=Ngrok Tunnel for Auto-Bill
+After=network.target auto-bill.service
+Wants=auto-bill.service
+
+[Service]
+Type=simple
+User=camellia17
+ExecStart=/usr/local/bin/ngrok http 8888 --log=stdout
+Restart=on-failure
+RestartSec=10
+StandardOutput=append:/var/log/ngrok.log
+StandardError=append:/var/log/ngrok.error.log
+
+[Install]
+WantedBy=multi-user.target
